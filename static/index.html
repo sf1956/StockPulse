@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>StocksPulse | Python Financial Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#050505">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">StocksPulse</div>
+            <div class="header-actions">
+                <button id="btn-import" class="icon-btn" title="Import from CSV">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                </button>
+                <button id="btn-lists" class="icon-btn" title="Choose List">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <section class="search-container">
+            <input type="text" id="symbol-search" class="search-input" placeholder="Enter ticker or name..." autocomplete="off">
+        </section>
+
+        <main id="dashboard-wrap">
+            <div id="list-label" class="list-label">Default Watchlist</div>
+            <div class="table-wrap">
+                <table id="stocks-table">
+                    <thead>
+                        <tr>
+                            <th data-col="name" class="sortable">Company <span class="sort-icon">⇅</span></th>
+                            <th data-col="symbol" class="sortable">Ticker <span class="sort-icon">⇅</span></th>
+                            <th data-col="price" class="sortable th-right">Price <span class="sort-icon">⇅</span></th>
+                            <th data-col="change" class="sortable th-right">Change ($) <span class="sort-icon">⇅</span></th>
+                            <th data-col="changePercent" class="sortable th-right">Change (%) <span class="sort-icon">⇅</span></th>
+                            <th data-col="pctOf52wHigh" class="sortable th-right">% of 52w High <span class="sort-icon">⇅</span></th>
+                            <th data-col="pctOff52wHigh" class="sortable th-right">% off 52w High <span class="sort-icon">⇅</span></th>
+                            <th class="th-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stocks-body">
+                        <tr><td colspan="8" class="loading-cell">Loading market data…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            <span>Home</span>
+        </a>
+        <a href="#" id="nav-add" class="nav-item">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span>Add</span>
+        </a>
+        <a href="#" id="nav-fin" class="nav-item">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <span>Financials</span>
+        </a>
+        <a href="#" class="nav-item">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            <span>Account</span>
+        </a>
+    </nav>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="csv-upload" accept=".csv" style="display: none;">
+
+    <!-- Modal for Lists / Financials -->
+    <div id="modal-container" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-title">Modal</h3>
+                <button id="modal-close">&times;</button>
+            </div>
+            <div id="modal-content" class="modal-body">
+                <!-- Content Injected -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
