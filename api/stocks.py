@@ -32,18 +32,22 @@ WATCHLIST_FILE = "watchlist.json"
 
 def get_lists() -> List[str]:
     """Get the names of all available watchlists."""
-    lists = []
+    lists = set(["default"])
     for f in os.listdir("."):
-        if f.startswith("watchlist_") and f.endswith(".json"):
-            lists.append(f.replace("watchlist_", "").replace(".json", ""))
-    return lists if lists else ["default"]
+        if f == "watchlist.json":
+            lists.add("default")
+        elif f.startswith("watchlist_") and f.endswith(".json"):
+            lists.add(f.replace("watchlist_", "").replace(".json", ""))
+    return sorted(list(lists))
 
 def get_watchlist(list_name: str = "default") -> List[str]:
     filename = f"watchlist_{list_name}.json" if list_name != "default" else "watchlist.json"
     if os.path.exists(filename):
         try:
             with open(filename, "r") as f:
-                return json.load(f)
+                data = json.load(f)
+                if isinstance(data, list):
+                    return data
         except:
             pass
     return ["AAPL", "MSFT", "NVDA", "TSLA", "GOOGL"]

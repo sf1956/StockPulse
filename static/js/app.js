@@ -136,6 +136,26 @@ function removeSymbol(symbol) {
 }
 
 /* ---- Modal Helpers ---- */
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+});
+
+async function shareApp() {
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'StocksPulse',
+                text: 'Check out my stock dashboard!',
+                url: window.location.href
+            });
+        } catch {}
+    } else {
+        alert('Share not supported on this device/browser.');
+    }
+}
+
 function openModal(title, html) {
     modalTitle.textContent = title;
     modalContent.innerHTML = html;
@@ -255,10 +275,22 @@ document.getElementById('modal-close').onclick = closeModal;
 document.getElementById('btn-lists').onclick = showLists;
 document.getElementById('btn-import').onclick = () => csvUpload.click();
 document.getElementById('nav-add').onclick = e => { e.preventDefault(); searchInput.focus(); };
-document.getElementById('nav-fin').onclick = e => {
-    e.preventDefault();
-    if (stocksData.length) showFinancials(stocksData[0].symbol);
-};
+
+// Share Button logic
+const btnShare = document.getElementById('btn-share');
+if (btnShare) btnShare.onclick = shareApp;
+
+// Refresh Button logic
+const btnRefresh = document.getElementById('btn-refresh');
+if (btnRefresh) btnRefresh.onclick = () => { state.isLoaded = false; updateDashboard(); };
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateDashboard();
+    // Register PWA Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+    }
+});
 
 csvUpload.onchange = async e => {
     if (!e.target.files.length) return;
@@ -305,4 +337,10 @@ searchInput.addEventListener('keypress', async e => {
     }
 });
 
-document.addEventListener('DOMContentLoaded', updateDashboard);
+document.addEventListener('DOMContentLoaded', () => {
+    updateDashboard();
+    // Register PWA Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+    }
+});
