@@ -71,6 +71,7 @@ function renderTable() {
         const offColor = pctOff <= 5 ? '#34c759' : pctOff <= 15 ? '#ff9f0a' : '#ff3b30';
 
         const row = document.createElement('tr');
+        row.style.cursor = 'pointer';
         row.innerHTML = `
             <td>
                 <div class="td-company-name">${stock.name}</div>
@@ -91,10 +92,11 @@ function renderTable() {
                 -${pctOff.toFixed(1)}%
             </td>
             <td class="td-right">
-                <button class="btn-fin" onclick="showFinancials('${stock.symbol}')">Financials</button>
-                <button class="btn-remove" onclick="removeSymbol('${stock.symbol}')" title="Remove">×</button>
+                <button class="btn-fin" onclick="event.stopPropagation(); showFinancials('${stock.symbol}')">Financials</button>
+                <button class="btn-remove" onclick="event.stopPropagation(); removeSymbol('${stock.symbol}')" title="Remove">×</button>
             </td>
         `;
+        row.onclick = () => showFinancials(stock.symbol);
         tbody.appendChild(row);
     });
 }
@@ -274,7 +276,18 @@ function fmt(n) {
 document.getElementById('modal-close').onclick = closeModal;
 document.getElementById('btn-lists').onclick = showLists;
 document.getElementById('btn-import').onclick = () => csvUpload.click();
-document.getElementById('nav-add').onclick = e => { e.preventDefault(); searchInput.focus(); };
+// Navigation Button logic
+document.getElementById('nav-add').onclick = e => {
+    e.preventDefault();
+    searchInput.scrollIntoView({ behavior: 'smooth' });
+    searchInput.focus();
+};
+
+document.getElementById('nav-fin').onclick = e => {
+    e.preventDefault();
+    if (stocksData.length > 0) showFinancials(stocksData[0].symbol);
+    else alert('Add a ticker first to see financials.');
+};
 
 // Share Button logic
 const btnShare = document.getElementById('btn-share');
@@ -282,7 +295,10 @@ if (btnShare) btnShare.onclick = shareApp;
 
 // Refresh Button logic
 const btnRefresh = document.getElementById('btn-refresh');
-if (btnRefresh) btnRefresh.onclick = () => { state.isLoaded = false; updateDashboard(); };
+if (btnRefresh) btnRefresh.onclick = () => {
+    state.isLoaded = false;
+    updateDashboard();
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     updateDashboard();
@@ -334,13 +350,5 @@ searchInput.addEventListener('keypress', async e => {
         renderTable();
     } else {
         alert(`"${symbol}" not found. Please check the ticker and try again.`);
-    }
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    updateDashboard();
-    // Register PWA Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/static/sw.js').catch(() => {});
     }
 });
